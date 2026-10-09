@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rotina do Dia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:light;
+    --bg:#F2F4EE;
+    --surface:#FFFFFF;
+    --surface-2:#E8ECE1;
+    --ink:#1B2420;
+    --ink-soft:#5E6A61;
+    --ink-faint:#8B968C;
+    --border:#DBE0D3;
+    --accent:#3F6B4A;
+    --accent-ink:#FDFEFB;
+    --morning:#B9811B;
+    --afternoon:#B65A39;
+    --evening:#454E8C;
+    --shadow:rgba(27,36,32,.08);
+    --ring-track:#DCE2D2;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#121A13;
+      --surface:#1B241B;
+      --surface-2:#233023;
+      --ink:#E9EEE3;
+      --ink-soft:#A3AE9C;
+      --ink-faint:#737E6E;
+      --border:#2E3B2C;
+      --accent:#71A880;
+      --accent-ink:#0E170F;
+      --morning:#E0A94C;
+      --afternoon:#E08568;
+      --evening:#8E98DE;
+      --shadow:rgba(0,0,0,.45);
+      --ring-track:#2A362A;
+    }
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Work Sans',system-ui,sans-serif;
+    display:flex;
+    justify-content:center;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  img{max-width:100%}
+  [hidden]{display:none!important}
+
+  .page{
+    width:100%;
+    max-width:540px;
+    padding:0 20px 48px;
+  }
+
+  .tabs-bar{
+    position:sticky;
+    top:env(safe-area-inset-top,0px);
+    z-index:6;
+    background:var(--bg);
+    padding:16px 0 10px;
+  }
+  .tabs{
+    display:flex;
+    background:var(--surface-2);
+    border-radius:12px;
+    padding:3px;
+    gap:3px;
+  }
+  .tab-btn{
+    flex:1;
+    border:none;
+    background:transparent;
+    color:var(--ink-soft);
+    font-family:inherit;
+    font-size:14px;
+    font-weight:600;
+    padding:9px 0;
+    border-radius:9px;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .tab-btn.active{
+    background:var(--surface);
+    color:var(--ink);
+    box-shadow:0 1px 2px var(--shadow);
+  }
+
+  header.top{
+    padding:10px 0 16px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:22px;
+  }
+  .eyebrow{
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    margin:0 0 6px;
+  }
+  .eyebrow strong{color:var(--ink-soft);font-weight:600;}
+  h1.date{
+    font-family:'Fraunces',Georgia,serif;
+    font-weight:500;
+    font-size:clamp(26px,7vw,34px);
+    line-height:1.08;
+    margin:0 0 16px;
+    text-wrap:balance;
+  }
+  .progress-row{display:flex;align-items:center;gap:14px;}
+  .ring-wrap{position:relative;width:52px;height:52px;flex:none;}
+  .ring{width:52px;height:52px;transform:rotate(-90deg);}
+  .ring circle{fill:none;stroke-width:5;}
+  .ring .track{stroke:var(--ring-track);}
+  .ring .fg{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .5s ease;}
+  @media (prefers-reduced-motion: reduce){ .ring .fg{transition:none;} }
+  .ring-num{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;
+    color:var(--ink);
+  }
+  .progress-copy{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .progress-copy .count{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .progress-copy .status{font-size:13px;color:var(--ink-soft);margin:0;}
+
+  .weekend-note{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px 16px;
+    font-size:14px;
+    color:var(--ink-soft);
+    margin-bottom:22px;
+    line-height:1.5;
+  }
+
+  .group{margin-bottom:26px;}
+  .group-head{display:flex;align-items:baseline;gap:9px;margin-bottom:10px;padding:0 2px;}
+  .group-head .dot{width:9px;height:9px;border-radius:50%;background:var(--period-color);flex:none;}
+  .group-head h2{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:18px;margin:0;color:var(--ink);}
+  .group-head .tally{margin-left:auto;font-size:13px;color:var(--ink-faint);font-variant-numeric:tabular-nums;}
+
+  ul.list{
+    list-style:none;margin:0;padding:0;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 1px 2px var(--shadow);
+  }
+  li.row{
+    display:flex;align-items:center;gap:13px;
+    padding:13px 14px;
+    border-bottom:1px solid var(--border);
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+  li.row:last-child{border-bottom:none;}
+  li.row:hover{background:var(--surface-2);}
+  li.row:focus-visible{outline:2px solid var(--period-color);outline-offset:-2px;}
+
+  .check{
+    width:25px;height:25px;flex:none;
+    border-radius:50%;
+    border:2px solid var(--border);
+    background:transparent;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .18s ease, border-color .18s ease, transform .15s ease;
+  }
+  .check svg{width:13px;height:13px;opacity:0;transform:scale(.5);transition:opacity .15s ease, transform .15s ease;}
+  .check svg path{stroke:var(--accent-ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;fill:none;}
+  li.row.done .check{background:var(--period-color);border-color:var(--period-color);transform:scale(1.04);}
+  li.row.done .check svg{opacity:1;transform:scale(1);}
+  @media (prefers-reduced-motion: reduce){ .check, .check svg{transition:none;} }
+
+  .row-text{min-width:0;flex:1;}
+  .label{display:block;font-size:15px;font-weight:500;color:var(--ink);transition:color .18s ease;overflow-wrap:anywhere;}
+  .note{display:block;font-size:12px;color:var(--ink-faint);margin-top:1px;}
+  li.row.done .label{color:var(--ink-faint);text-decoration:line-through;text-decoration-color:var(--ink-faint);text-decoration-thickness:1.5px;}
+  .time{flex:none;font-size:13px;color:var(--ink-faint);font-variant-numeric:tabular-nums;}
+
+  .all-done{
+    display:flex;align-items:center;gap:10px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:14px 16px;
+    margin-bottom:22px;
+    font-size:14px;
+    color:var(--ink-soft);
+  }
+  .all-done strong{color:var(--ink);font-weight:600;}
+
+  .periods{display:flex;background:var(--surface-2);border-radius:12px;padding:3px;gap:3px;margin:10px 0 20px;}
+  .period-btn{
+    flex:1;border:none;background:transparent;color:var(--ink-soft);
+    font-family:inherit;font-size:13.5px;font-weight:600;
+    padding:8px 0;border-radius:9px;cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .period-btn.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px var(--shadow);}
+
+  .msummary{display:flex;align-items:center;gap:16px;padding:4px 2px 20px;}
+  .msummary-num{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:40px;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .msummary-copy{display:flex;flex-direction:column;gap:2px;}
+  .msummary-copy .mlabel-top{font-size:14px;font-weight:600;color:var(--ink);}
+  .msummary-copy .status{font-size:13px;color:var(--ink-soft);margin:0;}
+
+  ul.mlist{padding:4px 14px;}
+  li.mrow{padding:12px 0;border-bottom:1px solid var(--border);}
+  li.mrow:last-child{border-bottom:none;}
+  .mrow-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:7px;}
+  .mlabel{font-size:14.5px;font-weight:500;color:var(--ink);}
+  .mstat{flex:none;font-size:12.5px;color:var(--ink-faint);font-variant-numeric:tabular-nums;}
+  .mbar{height:6px;border-radius:4px;background:var(--ring-track);overflow:hidden;}
+  .mbar-fill{height:100%;background:var(--period-color);border-radius:4px;transition:width .4s ease;}
+  @media (prefers-reduced-motion: reduce){ .mbar-fill{transition:none;} }
+
+  .empty-metrics{
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    padding:20px 16px;font-size:14px;color:var(--ink-soft);line-height:1.55;text-align:center;
+  }
+
+  footer.foot{text-align:center;color:var(--ink-faint);font-size:12.5px;margin-top:30px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="tabs-bar">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="today" id="tabToday">Hoje</button>
+      <button class="tab-btn" data-tab="metrics" id="tabMetrics">Métricas</button>
+    </div>
+  </div>
+
+  <section id="view-today">
+    <header class="top">
+      <p class="eyebrow">Hoje · <strong id="greeting">—</strong></p>
+      <h1 class="date" id="dateHeading">—</h1>
+      <div class="progress-row">
+        <div class="ring-wrap">
+          <svg class="ring" viewBox="0 0 52 52">
+            <circle class="track" cx="26" cy="26" r="22"></circle>
+            <circle class="fg" id="ringFg" cx="26" cy="26" r="22"></circle>
+          </svg>
+          <div class="ring-num" id="ringNum">0%</div>
+        </div>
+        <div class="progress-copy">
+          <span class="count"><span id="doneCount">0</span> de <span id="totalCount">0</span> feitas</span>
+          <p class="status" id="statusMsg">Vamos começar.</p>
+        </div>
+      </div>
+    </header>
+
+    <div id="weekendNote" class="weekend-note" hidden></div>
+    <div id="allDoneBanner" class="all-done" hidden>
+      <span>🌿</span>
+      <span><strong>Tudo certo por hoje.</strong> Só o sono agora.</span>
+    </div>
+
+    <main id="sections"></main>
+  </section>
+
+  <section id="view-metrics" hidden>
+    <header class="top" style="border-bottom:none;margin-bottom:0;padding-bottom:0;">
+      <p class="eyebrow">Métricas por atividade</p>
+      <div class="periods">
+        <button class="period-btn active" data-period="week">Semana</button>
+        <button class="period-btn" data-period="month">Mês</button>
+        <button class="period-btn" data-period="year">Ano</button>
+      </div>
+      <div class="msummary">
+        <div class="msummary-num" id="metricAvgPct">—</div>
+        <div class="msummary-copy">
+          <div class="mlabel-top" id="metricRangeLabel">Semana atual</div>
+          <p class="status" id="metricRangeDates">—</p>
+        </div>
+      </div>
+    </header>
+    <main id="metricSections"></main>
+  </section>
+
+  <footer class="foot">
+    Salvo automaticamente neste navegador/aparelho.<br>
+    Feito a partir da sua rotina no Google Agenda.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var ITEMS = [
+    {id:'acordar',      label:'Acordar + luz natural',       time:'07:30', period:'manha', days:[1,2,3,4,5]},
+    {id:'cardio',        label:'Cardio',                       time:'07:45', period:'manha', days:[1,3,5]},
+    {id:'sauna',         label:'Sauna',                        time:'07:45', period:'manha', days:[2,4]},
+    {id:'organizacao',   label:'Organização da casa',          time:'~10 min', period:'manha', days:[1,2,3,4,5]},
+    {id:'lavarroupas',   label:'Lavar roupas',                 time:'08:10', period:'manha', days:[4]},
+    {id:'cafe',          label:'Café da manhã',                time:'09:00', period:'manha', days:[1,2,3,4,5]},
+    {id:'prepararcomida',label:'Preparar comida da semana',    time:'10:00', period:'manha', days:[0]},
+    {id:'organizarcozinha',label:'Organizar a cozinha', note:'opcional', time:'11:00', period:'manha', days:[0]},
+
+    {id:'treino',        label:'Treino + banho',               time:'12:10', period:'tarde', days:[1,2,3,4,5]},
+    {id:'almoco',        label:'Almoço',                        time:'13:30', period:'tarde', days:[1,2,3,4,5]},
+    {id:'lanche',        label:'Lanche',                        time:'17:00', period:'tarde', days:[1,2,3,4,5]},
+
+    {id:'terapia',       label:'Terapia',                       time:'18:00', period:'noite', days:[3]},
+    {id:'descompressao', label:'Descompressão',                 time:'20:00', period:'noite', days:[1,2,3,4]},
+    {id:'jantar',        label:'Jantar',                        time:'21:00', period:'noite', days:[1,2,3,4,5]},
+    {id:'familia',       label:'Família / lazer',               time:'21:30', period:'noite', days:[1,2,3,4]},
+    {id:'planejamento',  label:'Planejamento semanal',          time:'20:00', period:'noite', days:[0]},
+    {id:'rotina',        label:'Rotina de desaceleração',       time:'23:00', period:'noite', days:[1,2,3,4]},
+    {id:'dormir',        label:'Dormir até 23:30',              time:'23:30', period:'noite', days:[0,1,2,3,4,5,6]}
+  ];
+
+  var PERIOD_LABEL = {manha:'Manhã', tarde:'Tarde', noite:'Noite'};
+  var PERIOD_ORDER = ['manha','tarde','noite'];
+  var STORAGE_PREFIX = 'rotina-dia-';
+
+  var now = new Date();
+  var today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var weekday = now.getDay();
+
+  function fmtKey(d){
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  var dateKey = fmtKey(now);
+  var storageKey = STORAGE_PREFIX + dateKey;
+
+  var todays = ITEMS.filter(function(it){ return it.days.indexOf(weekday) !== -1; });
+
+  var state = {};
+  try{
+    var raw = localStorage.getItem(storageKey);
+    if(raw) state = JSON.parse(raw) || {};
+  }catch(e){ state = {}; }
+
+  function save(){
+    try{ localStorage.setItem(storageKey, JSON.stringify(state)); }catch(e){}
+  }
+  save(); // guarantee today is registered even with zero checks yet
+
+  function hourGreeting(){
+    var h = now.getHours();
+    if(h < 5) return 'boa madrugada';
+    if(h < 12) return 'bom dia';
+    if(h < 18) return 'boa tarde';
+    return 'boa noite';
+  }
+
+  function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+  function periodColorVar(p){ return 'var(--' + (p === 'manha' ? 'morning' : p === 'tarde' ? 'afternoon' : 'evening') + ')'; }
+
+  function renderHeader(){
+    document.getElementById('greeting').textContent = hourGreeting();
+    var dateStr = now.toLocaleDateString('pt-BR', {weekday:'long', day:'numeric', month:'long'});
+    document.getElementById('dateHeading').textContent = cap(dateStr);
+
+    if(weekday === 6){
+      var note = document.getElementById('weekendNote');
+      note.hidden = false;
+      note.textContent = 'Sábado é dia livre — sem rotina fixa além de manter o horário de sono. Aproveite. 🌙';
+    }
+  }
+
+  function buildSections(){
+    var container = document.getElementById('sections');
+    container.innerHTML = '';
+
+    PERIOD_ORDER.forEach(function(period){
+      var items = todays.filter(function(it){ return it.period === period; });
+      if(!items.length) return;
+
+      var section = document.createElement('section');
+      section.className = 'group';
+      section.style.setProperty('--period-color', periodColorVar(period));
+
+      var head = document.createElement('div');
+      head.className = 'group-head';
+      head.innerHTML = '<span class="dot"></span><h2>' + PERIOD_LABEL[period] + '</h2><span class="tally" data-tally="' + period + '"></span>';
+      section.appendChild(head);
+
+      var ul = document.createElement('ul');
+      ul.className = 'list';
+
+      items.forEach(function(it){
+        var li = document.createElement('li');
+        li.className = 'row' + (state[it.id] ? ' done' : '');
+        li.setAttribute('role','checkbox');
+        li.setAttribute('tabindex','0');
+        li.setAttribute('aria-checked', state[it.id] ? 'true' : 'false');
+        li.dataset.id = it.id;
+
+        li.innerHTML =
+          '<span class="check"><svg viewBox="0 0 16 16"><path d="M3 8.5L6.2 12 13 4"/></svg></span>' +
+          '<span class="row-text"><span class="label">' + it.label + '</span>' +
+            (it.note ? '<span class="note">' + it.note + '</span>' : '') +
+          '</span>' +
+          '<span class="time">' + it.time + '</span>';
+
+        function toggle(){
+          state[it.id] = !state[it.id];
+          li.classList.toggle('done', !!state[it.id]);
+          li.setAttribute('aria-checked', state[it.id] ? 'true' : 'false');
+          save();
+          updateProgress();
+        }
+        li.addEventListener('click', toggle);
+        li.addEventListener('keydown', function(e){
+          if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); }
+        });
+
+        ul.appendChild(li);
+      });
+
+      section.appendChild(ul);
+      container.appendChild(section);
+    });
+  }
+
+  var RING_CIRC = 2 * Math.PI * 22;
+
+  function updateProgress(){
+    var total = todays.length;
+    var done = todays.filter(function(it){ return !!state[it.id]; }).length;
+
+    document.getElementById('doneCount').textContent = done;
+    document.getElementById('totalCount').textContent = total;
+
+    PERIOD_ORDER.forEach(function(period){
+      var items = todays.filter(function(it){ return it.period === period; });
+      if(!items.length) return;
+      var d = items.filter(function(it){ return !!state[it.id]; }).length;
+      var el = document.querySelector('[data-tally="' + period + '"]');
+      if(el) el.textContent = d + '/' + items.length;
+    });
+
+    var pct = total ? Math.round((done/total)*100) : 0;
+    document.getElementById('ringNum').textContent = pct + '%';
+
+    var ringFg = document.getElementById('ringFg');
+    ringFg.style.strokeDasharray = RING_CIRC;
+    ringFg.style.strokeDashoffset = RING_CIRC - (RING_CIRC * pct / 100);
+
+    var statusEl = document.getElementById('statusMsg');
+    var banner = document.getElementById('allDoneBanner');
+    if(total && done === total){
+      statusEl.textContent = 'Tudo feito. Bom descanso.';
+      banner.hidden = false;
+    }else if(done === 0){
+      statusEl.textContent = 'Vamos começar.';
+      banner.hidden = true;
+    }else{
+      statusEl.textContent = 'Seguindo bem — continue no seu ritmo.';
+      banner.hidden = true;
+    }
+  }
+
+  /* ---------- metrics ---------- */
+
+  function startOfWeek(d){
+    var dow = (d.getDay() + 6) % 7;
+    var r = new Date(d);
+    r.setDate(d.getDate() - dow);
+    return r;
+  }
+  function startOfMonth(d){ return new Date(d.getFullYear(), d.getMonth(), 1); }
+  function startOfYear(d){ return new Date(d.getFullYear(), 0, 1); }
+
+  function datesBetween(start, end){
+    var arr = [];
+    var d = new Date(start);
+    while(d <= end){
+      arr.push(new Date(d));
+      d.setDate(d.getDate() + 1);
+    }
+    return arr;
+  }
+
+  function getTrackingStart(){
+    var earliest = null;
+    try{
+      for(var i = 0; i < localStorage.length; i++){
+        var k = localStorage.key(i);
+        if(k && k.indexOf(STORAGE_PREFIX) === 0){
+          var parts = k.substring(STORAGE_PREFIX.length).split('-');
+          if(parts.length === 3){
+            var dt = new Date(parseInt(parts[0],10), parseInt(parts[1],10) - 1, parseInt(parts[2],10));
+            if(!isNaN(dt.getTime()) && (!earliest || dt < earliest)) earliest = dt;
+          }
+        }
+      }
+    }catch(e){}
+    return earliest || today0;
+  }
+
+  function fmtRangeHuman(a, b){
+    var opts = {day:'numeric', month:'short'};
+    var sa = a.toLocaleDateString('pt-BR', opts);
+    var sb = b.toLocaleDateString('pt-BR', opts);
+    return sa === sb ? sa : sa + ' – ' + sb;
+  }
+
+  function computeMetrics(rangeStart, rangeEnd){
+    var dates = datesBetween(rangeStart, rangeEnd);
+    var cache = {};
+    dates.forEach(function(d){
+      var k = fmtKey(d);
+      var val = null;
+      try{ var r = localStorage.getItem(STORAGE_PREFIX + k); if(r) val = JSON.parse(r); }catch(e){}
+      cache[k] = val || {};
+    });
+    return ITEMS.map(function(it){
+      var applicable = 0, done = 0;
+      dates.forEach(function(d){
+        if(it.days.indexOf(d.getDay()) !== -1){
+          applicable++;
+          if(cache[fmtKey(d)][it.id]) done++;
+        }
+      });
+      return {item:it, applicable:applicable, done:done};
+    });
+  }
+
+  var currentPeriod = 'week';
+
+  function renderMetrics(){
+    var trackingStart = getTrackingStart();
+    var periodStart, rangeLabel;
+    if(currentPeriod === 'week'){ periodStart = startOfWeek(today0); rangeLabel = 'Semana atual'; }
+    else if(currentPeriod === 'month'){ periodStart = startOfMonth(today0); rangeLabel = 'Mês atual'; }
+    else { periodStart = startOfYear(today0); rangeLabel = 'Ano atual'; }
+
+    var rangeStart = periodStart > trackingStart ? periodStart : trackingStart;
+    if(rangeStart > today0) rangeStart = today0;
+
+    var results = computeMetrics(rangeStart, today0);
+
+    var sumApplicable = 0, sumDone = 0;
+    results.forEach(function(r){ sumApplicable += r.applicable; sumDone += r.done; });
+    var avgPct = sumApplicable ? Math.round((sumDone/sumApplicable)*100) : null;
+
+    document.getElementById('metricAvgPct').textContent = avgPct === null ? '—' : avgPct + '%';
+    document.getElementById('metricRangeLabel').textContent = rangeLabel;
+    document.getElementById('metricRangeDates').textContent = fmtRangeHuman(rangeStart, today0);
+
+    var container = document.getElementById('metricSections');
+    container.innerHTML = '';
+
+    if(sumApplicable === 0){
+      var p = document.createElement('p');
+      p.className = 'empty-metrics';
+      p.textContent = 'Ainda não há dados suficientes neste período. Volte depois de usar o checklist por alguns dias.';
+      container.appendChild(p);
+      return;
+    }
+
+    PERIOD_ORDER.forEach(function(period){
+      var items = results.filter(function(r){ return r.item.period === period; });
+      if(!items.length) return;
+
+      var section = document.createElement('section');
+      section.className = 'group';
+      section.style.setProperty('--period-color', periodColorVar(period));
+
+      var head = document.createElement('div');
+      head.className = 'group-head';
+      head.innerHTML = '<span class="dot"></span><h2>' + PERIOD_LABEL[period] + '</h2>';
+      section.appendChild(head);
+
+      var ul = document.createElement('ul');
+      ul.className = 'list mlist';
+
+      items.forEach(function(r){
+        var pct = r.applicable ? Math.round((r.done/r.applicable)*100) : null;
+        var li = document.createElement('li');
+        li.className = 'mrow';
+        li.innerHTML =
+          '<div class="mrow-top"><span class="mlabel">' + r.item.label + '</span>' +
+          '<span class="mstat">' + (pct === null ? 'ainda não ocorreu' : r.done + '/' + r.applicable + ' · ' + pct + '%') + '</span></div>' +
+          '<div class="mbar"><div class="mbar-fill" style="width:' + (pct || 0) + '%"></div></div>';
+        ul.appendChild(li);
+      });
+
+      section.appendChild(ul);
+      container.appendChild(section);
+    });
+  }
+
+  /* ---------- tabs ---------- */
+
+  var tabButtons = document.querySelectorAll('.tab-btn');
+  tabButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      tabButtons.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var tab = btn.dataset.tab;
+      document.getElementById('view-today').hidden = tab !== 'today';
+      document.getElementById('view-metrics').hidden = tab !== 'metrics';
+      if(tab === 'metrics') renderMetrics();
+    });
+  });
+
+  var periodButtons = document.querySelectorAll('.period-btn');
+  periodButtons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      periodButtons.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentPeriod = btn.dataset.period;
+      renderMetrics();
+    });
+  });
+
+  renderHeader();
+  buildSections();
+  updateProgress();
+})();
+</script>
+</body>
+</html>
